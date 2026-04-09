@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock LSTM Predictor</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(15, 12, 41, 0.95);
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #7f5af0;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #7f5af0;
+            letter-spacing: 1px;
+        }
+
+        .navbar .logo span {
+            color: #2cb67d;
+        }
+
+        .navbar .status {
+            font-size: 13px;
+            color: #72757e;
+        }
+
+        .navbar .status .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #2cb67d;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #7f5af0, #2cb67d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: #72757e;
+            font-size: 15px;
+        }
+
+        .panel {
+            background: rgba(36, 36, 62, 0.7);
+            border: 1px solid rgba(127, 90, 240, 0.2);
+            border-radius: 16px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f5af0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #72757e;
+            margin-bottom: 6px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(127, 90, 240, 0.3);
+            border-radius: 10px;
+            background: rgba(15, 12, 41, 0.8);
+            color: #e0e0e0;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: #7f5af0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7f5af0, #6341c9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #6341c9, #7f5af0);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(127, 90, 240, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2cb67d, #1f9d6a);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1f9d6a, #2cb67d);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(44, 182, 125, 0.4);
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-warning {
+            background: rgba(255, 107, 53, 0.15);
+            border: 1px solid rgba(255, 107, 53, 0.4);
+            color: #ff6b35;
+        }
+
+        .alert-info {
+            background: rgba(44, 182, 125, 0.15);
+            border: 1px solid rgba(44, 182, 125, 0.4);
+            color: #2cb67d;
+        }
+
+        .alert-loading {
+            background: rgba(127, 90, 240, 0.15);
+            border: 1px solid rgba(127, 90, 240, 0.4);
+            color: #7f5af0;
+        }
+
+        #chart {
+            min-height: 500px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(15, 12, 41, 0.6);
+            border: 1px solid rgba(127, 90, 240, 0.15);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-card .stat-label {
+            font-size: 11px;
+            color: #72757e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #7f5af0;
+        }
+
+        .stat-card .stat-value.green { color: #2cb67d; }
+        .stat-card .stat-value.gold { color: #ffd700; }
+        .stat-card .stat-value.red { color: #ff6b35; }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #72757e;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        .slider-container input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(127, 90, 240, 0.2);
+            outline: none;
+            margin-top: 8px;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #7f5af0;
+            cursor: pointer;
+        }
+
+        .days-display {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #7f5af0;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">LSTM<span>Predict</span></div>
+        <div class="status"><span class="dot"></span> Models Loaded</div>
+    </nav>
+
+    <div class="container">
+
+        <div class="hero">
+            <h1>Stock Price Forecasting</h1>
+            <p>LSTM Neural Network predictions with MLflow-tracked best models</p>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Control Panel</div>
+            <div class="controls-grid">
+                <div class="form-group">
+                    <label>Select Stock</label>
+                    <select id="stockSelect">
+                        <option value="">-- Choose a stock --</option>
+                        {% for stock in stocks %}
+                        <option value="{{ stock.ticker }}">{{ stock.ticker }} — {{ stock.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Forecast Days</label>
+                    <input type="number" id="nDays" value="5" min="1" max="40">
+                </div>
+
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" onclick="visualize()">📊 Visualize</button>
+                </div>
+
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-success" onclick="predictAhead()">🔮 Predict Ahead</button>
+                </div>
+
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn" style="background: rgba(127, 90, 240, 0.15); color: #7f5af0; border: 1px solid rgba(127, 90, 240, 0.3);" onclick="clearChart()">🗑 Clear</button>
+                </div>
+            </div>
+
+            <div class="slider-container" style="margin-top: 15px;">
+                <label style="font-size: 12px; color: #72757e; text-transform: uppercase; letter-spacing: 0.5px;">Quick Select Days</label>
+                <input type="range" id="daysSlider" min="1" max="40" value="5" oninput="updateDaysFromSlider(this.value)">
+                <div class="days-display" id="daysDisplay">5 days</div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning" id="warningBox"></div>
+        <div class="alert alert-info" id="infoBox"></div>
+        <div class="alert alert-loading" id="loadingBox">⏳ Loading prediction data...</div>
+
+        <div class="panel">
+            <div class="panel-title">Prediction Chart</div>
+            <div id="chart"></div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Selected Stock</div>
+                <div class="stat-value" id="statStock">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Actual Price</div>
+                <div class="stat-value green" id="statLastPrice">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Forecast Days</div>
+                <div class="stat-value gold" id="statDays">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Predicted Price</div>
+                <div class="stat-value red" id="statPredPrice">—</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built with LSTM + MLflow + Optuna + FastAPI — Stock Price Forecasting System
+        </div>
+    </div>
+
+    <script>
+        function updateDaysFromSlider(val) {
+            document.getElementById('nDays').value = val;
+            document.getElementById('daysDisplay').textContent = val + ' days';
+        }
+
+        function showWarning(msg) {
+            const box = document.getElementById('warningBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 6000);
+        }
+
+        function showInfo(msg) {
+            const box = document.getElementById('infoBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 6000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingBox').style.display = show ? 'block' : 'none';
+        }
+
+        function clearChart() {
+            Plotly.purge('chart');
+            document.getElementById('statsGrid').style.display = 'none';
+        }
+
+        function updateStats(ticker, lastPrice, days, predPrice) {
+            document.getElementById('statStock').textContent = ticker;
+            document.getElementById('statLastPrice').textContent = '$' + lastPrice.toFixed(2);
+            document.getElementById('statDays').textContent = days;
+            document.getElementById('statPredPrice').textContent = '$' + predPrice.toFixed(2);
+            document.getElementById('statsGrid').style.display = 'grid';
+        }
+
+        async function visualize() {
+            const ticker = document.getElementById('stockSelect').value;
+            if (!ticker) {
+                showWarning('⚠️ Please select a stock first!');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`/api/visualize/${ticker}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    showWarning(data.error);
+                    showLoading(false);
+                    return;
+                }
+
+                const trace1 = {
+                    x: data.dates,
+                    y: data.actuals,
+                    name: 'Actual Price',
+                    type: 'scatter',
+                    line: { color: '#2cb67d', width: 2.5 }
+                };
+
+                const trace2 = {
+                    x: data.dates,
+                    y: data.predictions,
+                    name: 'Model Prediction',
+                    type: 'scatter',
+                    line: { color: '#7f5af0', width: 2, dash: 'dot' }
+                };
+
+                const layout = {
+                    title: { text: `${data.name} (${data.ticker})`, font: { size: 18, color: '#e0e0e0' } },
+                    xaxis: { title: 'Date', color: '#72757e', type: 'date', gridcolor: 'rgba(127,90,240,0.1)' },
+                    yaxis: { title: 'Price ($)', color: '#72757e', gridcolor: 'rgba(127,90,240,0.1)' },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(15, 12, 41, 0.4)',
+                    font: { color: '#e0e0e0', family: 'Inter' },
+                    legend: { x: 0, y: 1.15, orientation: 'h' },
+                    margin: { t: 60, b: 60, l: 60, r: 30 }
+                };
+
+                Plotly.newPlot('chart', [trace1, trace2], layout, { responsive: true });
+                showInfo(`✅ Loaded ${data.actuals.length} validation data points for ${data.ticker}`);
+
+            } catch (err) {
+                showWarning('Error: ' + err.message);
+            }
+
+            showLoading(false);
+        }
+
+        async function predictAhead() {
+            const ticker = document.getElementById('stockSelect').value;
+            const nDays = parseInt(document.getElementById('nDays').value);
+
+            if (!ticker) {
+                showWarning('⚠️ Please select a stock first!');
+                return;
+            }
+
+            if (nDays > 40) {
+                showWarning('⚠️ WARNING: The model is only valid up to 40 days ahead. Please reduce your prediction horizon.');
+                return;
+            }
+
+            if (nDays < 1) {
+                showWarning('⚠️ Minimum 1 day!');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const predResponse = await fetch(`/api/predict/${ticker}/${nDays}`);
+                const predData = await predResponse.json();
+
+                if (predData.error) {
+                    showWarning(predData.error);
+                    showLoading(false);
+                    return;
+                }
+
+                const trace1 = {
+                    x: predData.val_dates,
+                    y: predData.val_actuals,
+                    name: 'Actual Price',
+                    type: 'scatter',
+                    line: { color: '#2cb67d', width: 2.5 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(44, 182, 125, 0.05)'
+                };
+
+                const trace2 = {
+                    x: predData.val_dates,
+                    y: predData.val_predictions,
+                    name: 'Model Prediction',
+                    type: 'scatter',
+                    line: { color: '#7f5af0', width: 2, dash: 'dot' }
+                };
+
+                const lastDate = predData.val_dates[predData.val_dates.length - 1];
+                const futureX = [lastDate, ...predData.future_dates];
+                const futureY = [predData.val_actuals[predData.val_actuals.length - 1], ...predData.future_predictions];
+
+                const trace3 = {
+                    x: futureX,
+                    y: futureY,
+                    name: `Forecast (${nDays} days)`,
+                    type: 'scatter',
+                    line: { color: '#ffd700', width: 3 },
+                    mode: 'lines+markers',
+                    marker: { size: 7, color: '#ffd700' }
+                };
+
+                const layout = {
+                    title: { text: `${predData.name} (${predData.ticker}) — ${nDays}-Day Forecast`, font: { size: 18, color: '#e0e0e0' } },
+                    xaxis: { title: 'Date', color: '#72757e', type: 'date', gridcolor: 'rgba(127,90,240,0.1)' },
+                    yaxis: { title: 'Price ($)', color: '#72757e', gridcolor: 'rgba(127,90,240,0.1)' },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(15, 12, 41, 0.4)',
+                    font: { color: '#e0e0e0', family: 'Inter' },
+                    legend: { x: 0, y: 1.15, orientation: 'h' },
+                    margin: { t: 60, b: 60, l: 60, r: 30 },
+                    shapes: [{
+                        type: 'line',
+                        x0: lastDate,
+                        x1: lastDate,
+                        y0: 0,
+                        y1: 1,
+                        yref: 'paper',
+                        line: { color: 'rgba(255, 215, 0, 0.5)', width: 2, dash: 'dash' }
+                    }],
+                    annotations: [{
+                        x: lastDate,
+                        y: 1.05,
+                        yref: 'paper',
+                        text: '◀ Historical | Forecast ▶',
+                        showarrow: false,
+                        font: { color: '#ffd700', size: 11 }
+                    }]
+                };
+
+                Plotly.newPlot('chart', [trace1, trace2, trace3], layout, { responsive: true });
+
+                const lastPred = predData.future_predictions[predData.future_predictions.length - 1];
+                updateStats(predData.ticker, predData.last_actual_price, nDays, lastPred);
+
+                if (nDays >= 30) {
+                    showWarning('⚠️ Predictions beyond 30 days may be less reliable. Maximum is 40 days.');
+                } else {
+                    showInfo(`🔮 ${nDays}-day forecast generated for ${predData.ticker}. Last known price: $${predData.last_actual_price.toFixed(2)}`);
+                }
+
+            } catch (err) {
+                showWarning('Error: ' + err.message);
+            }
+
+            showLoading(false);
+        }
+
+        // Sync slider with input
+        document.getElementById('nDays').addEventListener('input', function() {
+            document.getElementById('daysSlider').value = this.value;
+            document.getElementById('daysDisplay').textContent = this.value + ' days';
+        });
+    </script>
+</body>
+</html>

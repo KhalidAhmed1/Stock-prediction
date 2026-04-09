@@ -15,6 +15,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+# Fix import path so Architecture.py can be found
 sys.path.insert(0, os.path.dirname(__file__))
 from Architecture import LSTMModel
 
@@ -62,6 +63,9 @@ def prepare_dataset_once(stock_ticker, period="20y", window_size=60, test_size=0
     if len(df) <= window_size:
         raise ValueError(f"Not enough data for {stock_ticker} after preprocessing")
 
+    # Save dates before scaling
+    all_dates = df.index[window_size:]
+
     feature_scaler = MinMaxScaler()
     target_scaler = MinMaxScaler()
 
@@ -83,6 +87,9 @@ def prepare_dataset_once(stock_ticker, period="20y", window_size=60, test_size=0
     X_val = X[split_idx:]
     y_val = y[split_idx:]
 
+    train_dates = all_dates[:split_idx]
+    val_dates = all_dates[split_idx:]
+
     prepared_data = {
         "X_train": X_train,
         "y_train": y_train,
@@ -90,11 +97,13 @@ def prepare_dataset_once(stock_ticker, period="20y", window_size=60, test_size=0
         "y_val": y_val,
         "target_scaler": target_scaler,
         "input_size": X.shape[2],
-        "window_size": window_size
+        "window_size": window_size,
+        "dates": all_dates,
+        "train_dates": train_dates,
+        "val_dates": val_dates
     }
 
     return prepared_data
-
 
 def make_loaders_from_prepared(prepared_data, batch_size):
     train_dataset = TensorDataset(
@@ -177,10 +186,10 @@ def objective(trial, prepared_data, stock_ticker, stock_name, device):
         )
 
         model = LSTMModel(
-            prepared_data["input_size"],
-            params["hidden_size"],
-            params["num_layers"],
-            1
+            input_size=prepared_data["input_size"],
+            hidden_size=params["hidden_size"],
+            num_layers=params["num_layers"],
+            output_size=1
         ).to(device)
 
         criterion = nn.MSELoss()
@@ -292,10 +301,10 @@ def train_best_model(prepared_data, stock_ticker, stock_name, best_params, devic
     )
 
     model = LSTMModel(
-        prepared_data["input_size"],
-        best_params["hidden_size"],
-        best_params["num_layers"],
-        1
+        input_size=prepared_data["input_size"],
+        hidden_size=best_params["hidden_size"],
+        num_layers=best_params["num_layers"],
+        output_size=1
     ).to(device)
 
     criterion = nn.MSELoss()
