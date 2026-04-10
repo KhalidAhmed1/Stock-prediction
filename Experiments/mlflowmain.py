@@ -34,6 +34,29 @@ PERIOD        = "5y"
 
 
 def start_experiments_for_all_stocks(stocks):
+    """
+    Run hyperparameter optimization experiments for a list of stocks.
+
+    This function iterates over each stock in the provided list and runs
+    an Optuna optimization process using a helper function. Results are
+    tracked using MLflow.
+
+    Args:
+        stocks (list of dict): List of stock configurations, where each dictionary contains:
+            - 'ticker' (str): Stock ticker symbol
+            - 'name' (str): Human-readable stock name
+
+    Returns:
+        None
+
+    Behavior:
+        - Executes experiments sequentially for each stock
+        - Logs successful experiment completion
+        - Catches and logs exceptions without stopping the loop
+
+    Example:
+        start_experiments_for_all_stocks(STOCKS)
+    """
     for stock in stocks:
         try:
             study, prepared = run_optuna_for_stock(
