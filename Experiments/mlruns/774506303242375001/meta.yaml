@@ -1,0 +1,6 @@
+artifact_location: file:///D:/stockproject/Experiments/mlruns/774506303242375001
+creation_time: 1775688605102
+experiment_id: '774506303242375001'
+last_update_time: 1775688605102
+lifecycle_stage: active
+name: LSTM_Stock_Forecasting/NVDA_NVIDIA

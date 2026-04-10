@@ -1,0 +1,6 @@
+artifact_location: file:///D:/stockproject/Experiments/mlruns/171880291371697305
+creation_time: 1775688351767
+experiment_id: '171880291371697305'
+last_update_time: 1775688351767
+lifecycle_stage: active
+name: LSTM_Stock_Forecasting/MSFT_Microsoft

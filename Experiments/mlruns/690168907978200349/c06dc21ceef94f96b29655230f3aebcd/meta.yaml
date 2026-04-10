@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/stockproject/Experiments/mlruns/690168907978200349/c06dc21ceef94f96b29655230f3aebcd/artifacts
+end_time: 1775688597106
+entry_point_name: ''
+experiment_id: '690168907978200349'
+lifecycle_stage: active
+run_id: c06dc21ceef94f96b29655230f3aebcd
+run_name: trial_4
+run_uuid: c06dc21ceef94f96b29655230f3aebcd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775688588184
+status: 3
+tags: []
+user_id: Lenovo

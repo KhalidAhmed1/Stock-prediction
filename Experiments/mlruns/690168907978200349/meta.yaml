@@ -1,0 +1,6 @@
+artifact_location: file:///D:/stockproject/Experiments/mlruns/690168907978200349
+creation_time: 1775688534841
+experiment_id: '690168907978200349'
+last_update_time: 1775688534841
+lifecycle_stage: active
+name: LSTM_Stock_Forecasting/HPQ_HP_Inc.

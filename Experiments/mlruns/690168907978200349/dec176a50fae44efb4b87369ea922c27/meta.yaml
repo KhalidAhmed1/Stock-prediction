@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/stockproject/Experiments/mlruns/690168907978200349/dec176a50fae44efb4b87369ea922c27/artifacts
+end_time: 1775688605084
+entry_point_name: ''
+experiment_id: '690168907978200349'
+lifecycle_stage: active
+run_id: dec176a50fae44efb4b87369ea922c27
+run_name: HPQ_optuna_parent
+run_uuid: dec176a50fae44efb4b87369ea922c27
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775688535679
+status: 3
+tags: []
+user_id: Lenovo

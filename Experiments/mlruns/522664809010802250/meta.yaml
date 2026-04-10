@@ -1,0 +1,6 @@
+artifact_location: file:///D:/stockproject/Experiments/mlruns/522664809010802250
+creation_time: 1775688447260
+experiment_id: '522664809010802250'
+last_update_time: 1775688447260
+lifecycle_stage: active
+name: LSTM_Stock_Forecasting/GC=F_Gold_Futures
