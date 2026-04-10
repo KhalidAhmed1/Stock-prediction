@@ -3,6 +3,7 @@
 # 📈 Stock Price Prediction with LSTM & MLflow
 
 An end-to-end machine learning pipeline for predicting stock prices using **LSTM** neural networks. Features automated hyperparameter optimization with **Optuna**, experiment tracking with **MLflow**, and an interactive **FastAPI** web dashboard for real-time visualization and multi-day forecasting.
+Video Link:https://drive.google.com/file/d/1iKqLdKNSm1YMeBiwPpxAsQ6dpmPHpmhk/view?usp=sharing
 
 ---
 
