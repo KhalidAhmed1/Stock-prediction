@@ -5,6 +5,21 @@ from datetime import timedelta
 
 
 def predict_n_days_ahead(model, prepared_data, n_days=5, device='cpu'):
+    """
+    Predict future values for the next n_days using a trained model.
+
+    Args:
+        model: Trained PyTorch model.
+        prepared_data (dict): Contains scaled data, validation window, dates, and scaler.
+        n_days (int): Number of future days to predict.
+        device (str): Device to run the model on ('cpu' or 'cuda').
+
+    Returns:
+        tuple:
+            - predictions_real (list): Predicted values in original scale.
+            - future_dates (list): Corresponding future dates.
+            - error_message (str or None): Warning if n_days exceeds limit.
+    """
     if n_days > 40:
         return None, None, "WARNING: Model is only valid up to 20 days ahead. Please reduce your prediction horizon."
 
@@ -44,6 +59,20 @@ def predict_n_days_ahead(model, prepared_data, n_days=5, device='cpu'):
 
 
 def get_validation_actuals_and_preds(model, prepared_data, device='cpu'):
+    """
+    Get actual and predicted values on the validation dataset.
+
+    Args:
+        model: Trained PyTorch model.
+        prepared_data (dict): Contains validation data, dates, and scaler.
+        device (str): Device to run the model on ('cpu' or 'cuda').
+
+    Returns:
+        tuple:
+            - actuals (list): Ground truth values in original scale.
+            - preds (list): Model predictions in original scale.
+            - dates (list): Corresponding validation dates.
+    """
     target_scaler = prepared_data["target_scaler"]
     X_val = prepared_data["X_val"]
     y_val = prepared_data["y_val"]
