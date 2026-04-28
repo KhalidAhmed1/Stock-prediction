@@ -5,6 +5,11 @@ from datetime import timedelta
 
 
 def predict_n_days_ahead(model, prepared_data, n_days=5, device='cpu'):
+    try:
+        n_days = int(n_days)
+    except (TypeError, ValueError):
+        return None, None, "WARNING: Forecast horizon must be a number."
+
     if n_days > 40:
         return None, None, "WARNING: Model is only valid up to 20 days ahead. Please reduce your prediction horizon."
 
@@ -37,8 +42,13 @@ def predict_n_days_ahead(model, prepared_data, n_days=5, device='cpu'):
     predictions_real = target_scaler.inverse_transform(predictions).flatten()
 
     # Generate future dates
-    last_date = prepared_data["dates"][-1]
-    future_dates = pd.bdate_range(start=last_date + timedelta(days=1), periods=n_days).strftime('%Y-%m-%d').tolist()
+    last_date_raw = prepared_data["dates"][-1]
+    last_date = pd.to_datetime(last_date_raw, errors="coerce")
+    if pd.isna(last_date):
+        return None, None, f"WARNING: Invalid last date in prepared data ({last_date_raw!r})."
+
+    start_date = last_date + timedelta(days=1)
+    future_dates = pd.bdate_range(start=start_date, periods=n_days).strftime('%Y-%m-%d').tolist()
 
     return predictions_real.tolist(), future_dates, None
 
