@@ -579,7 +579,7 @@ def dashboard_layout():
         ]),
 
         # KPI cards row (dynamic)
-        html.Div(id="db-kpis", style={"marginBottom": "25px"}),
+        html.Div(id="db-kpis", style={"marginBottom": "25px", "width": "100%"}),
 
         # Charts grid
         html.Div(style=CARD, children=[
@@ -662,14 +662,36 @@ def update_dashboard(ticker, period):
             "marginBottom": "0",
             "borderTop": f"4px solid {color}",
             "textAlign": "center",
+            "minWidth": "0",
+            "overflow": "hidden",
+            "padding": "20px 14px",
         }, children=[
-            html.Div(label, style={**LABEL, "marginBottom": "12px", "fontSize": "13px"}),
-            html.Div(value, style={"fontSize": "44px", "fontWeight": "800", "color": color,
-                                    "fontFamily": "'Inter', sans-serif", "lineHeight": "1.2"}),
-            html.Div(sub, style={"fontSize": "14px", "color": C["muted"], "marginTop": "8px", "fontWeight": "600"}),
+            html.Div(label, style={**LABEL, "marginBottom": "8px", "fontSize": "11px"}),
+            html.Div(value, style={
+                "fontSize": "clamp(20px, 1.7vw, 30px)",
+                "fontWeight": "800",
+                "color": color,
+                "fontFamily": "'Inter', sans-serif",
+                "lineHeight": "1.1",
+                "whiteSpace": "normal",
+                "wordBreak": "break-word",
+            }),
+            html.Div(sub, style={
+                "fontSize": "clamp(10px, 0.7vw, 12px)",
+                "color": C["muted"],
+                "marginTop": "6px",
+                "fontWeight": "600",
+                "whiteSpace": "normal",
+            }),
         ])
 
-    kpis = html.Div(style={"display": "grid", "gridTemplateColumns": "repeat(7,1fr)", "gap": "15px"}, children=[
+    kpis = html.Div(style={
+        "display": "grid",
+        "gridTemplateColumns": "repeat(auto-fit, minmax(180px, 1fr))",
+        "gap": "12px",
+        "width": "100%",
+        "alignItems": "stretch",
+    }, children=[
         kpi("Last Close",  f"${last:.2f}",
             f"{chg:+.2f}%", color=C["accent2"] if chg >= 0 else C["red"]),
         kpi("Period High", f"${high:.2f}",  color=C["accent2"]),
