@@ -1,0 +1,40 @@
+.stock-dropdown .Select-control {
+  background-color: #0d1117 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+  min-height: 40px;
+}
+
+.stock-dropdown .Select-placeholder {
+  color: #94a3b8 !important;
+}
+
+.stock-dropdown .Select-value-label,
+.stock-dropdown .Select--single > .Select-control .Select-value {
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+
+.stock-dropdown .Select-arrow-zone .Select-arrow {
+  border-top-color: #cbd5e1 !important;
+}
+
+.stock-dropdown .Select-menu-outer {
+  background-color: #111827 !important;
+  border: 1px solid #334155 !important;
+}
+
+.stock-dropdown .VirtualizedSelectOption {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+}
+
+.stock-dropdown .VirtualizedSelectFocusedOption {
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.stock-dropdown .VirtualizedSelectSelectedOption {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  color: #ffffff !important;
+}
